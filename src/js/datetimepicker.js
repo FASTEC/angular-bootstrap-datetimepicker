@@ -133,7 +133,10 @@
         '               data-ng-class="{active: dateObject.active, past: dateObject.past, future: dateObject.future, disabled: !dateObject.selectable}" >{{ dateObject.display }}</td>' +
         '       </tr>' +
         '   </tbody>' +
-        '</table><button class="btn btn-success" ng-click="done()">Done</button></div>',
+        '</table>' +
+        '<button class="btn btn-success" ng-click="done()">Done</button>' +
+        '<button class="btn btn-danger btn-clear" ng-click="clear()">Clear</button>' +
+        '</div>',
         scope: {
           onSetTime: '&',
           beforeRender: '&'
@@ -347,9 +350,14 @@
             },
 
             setTime: function setTime(unixDate) {
-              var tempDate = new Date(unixDate);
-              var newDate = new Date(tempDate.getTime() + (tempDate.getTimezoneOffset() * 60000));
-
+              var newDate = undefined;
+              if (unixDate != null) {
+                var tempDate = new Date(unixDate);
+                newDate = new Date(tempDate.getTime() + (tempDate.getTimezoneOffset() * 60000));
+              }
+              else {
+                unixDate = undefined;
+              }
               var oldDate = ngModelController.$modelValue;
               ngModelController.$setViewValue(newDate);
 
@@ -411,6 +419,11 @@
               var result = dataFactory['setTime'](scope.dateObject.utcDateValue);
               scope.updateData(result);
             }
+          };
+
+          scope.clear = function clear() {
+            var result = dataFactory['setTime'](null);
+            scope.updateData(result);
           };
 
           ngModelController.$render = function $render() {

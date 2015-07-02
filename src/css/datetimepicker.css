@@ -385,3 +385,7 @@
 .datetimepicker tfoot tr:first-child th:hover {
     background: #eeeeee;
 }
+
+.btn-clear {
+    float: right;
+}
