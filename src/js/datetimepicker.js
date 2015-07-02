@@ -133,7 +133,7 @@
         '               data-ng-class="{active: dateObject.active, past: dateObject.past, future: dateObject.future, disabled: !dateObject.selectable}" >{{ dateObject.display }}</td>' +
         '       </tr>' +
         '   </tbody>' +
-        '</table></div>',
+        '</table><button class="btn btn-success">Done</button></div>',
         scope: {
           onSetTime: '&',
           beforeRender: '&'
