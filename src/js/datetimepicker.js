@@ -133,7 +133,7 @@
         '               data-ng-class="{active: dateObject.active, past: dateObject.past, future: dateObject.future, disabled: !dateObject.selectable}" >{{ dateObject.display }}</td>' +
         '       </tr>' +
         '   </tbody>' +
-        '</table><button class="btn btn-success">Done</button></div>',
+        '</table><button class="btn btn-success" ng-click="done()">Done</button></div>',
         scope: {
           onSetTime: '&',
           beforeRender: '&'
@@ -176,8 +176,8 @@
                   utcDateValue: null,
                   display: startDecade + '-' + (startDecade + 9)
                 }),
-                'leftDate': new DateObject({utcDateValue: moment.utc(startDate).subtract(9, 'year').valueOf()}),
-                'rightDate': new DateObject({utcDateValue: moment.utc(startDate).add(11, 'year').valueOf()}),
+                'leftDate': new DateObject({ utcDateValue: moment.utc(startDate).subtract(9, 'year').valueOf() }),
+                'rightDate': new DateObject({ utcDateValue: moment.utc(startDate).add(11, 'year').valueOf() }),
                 'dates': []
               };
 
@@ -211,8 +211,8 @@
                   utcDateValue: previousViewDate.valueOf(),
                   display: startDate.format('YYYY')
                 }),
-                'leftDate': new DateObject({utcDateValue: moment.utc(startDate).subtract(1, 'year').valueOf()}),
-                'rightDate': new DateObject({utcDateValue: moment.utc(startDate).add(1, 'year').valueOf()}),
+                'leftDate': new DateObject({ utcDateValue: moment.utc(startDate).subtract(1, 'year').valueOf() }),
+                'rightDate': new DateObject({ utcDateValue: moment.utc(startDate).add(1, 'year').valueOf() }),
                 'dates': []
               };
 
@@ -249,8 +249,8 @@
                   utcDateValue: previousViewDate.valueOf(),
                   display: startOfMonth.format('YYYY-MMM')
                 }),
-                'leftDate': new DateObject({utcDateValue: moment.utc(startOfMonth).subtract(1, 'months').valueOf()}),
-                'rightDate': new DateObject({utcDateValue: moment.utc(startOfMonth).add(1, 'months').valueOf()}),
+                'leftDate': new DateObject({ utcDateValue: moment.utc(startOfMonth).subtract(1, 'months').valueOf() }),
+                'rightDate': new DateObject({ utcDateValue: moment.utc(startOfMonth).add(1, 'months').valueOf() }),
                 'dayNames': [],
                 'weeks': []
               };
@@ -261,7 +261,7 @@
               }
 
               for (var i = 0; i < 6; i += 1) {
-                var week = {dates: []};
+                var week = { dates: [] };
                 for (var j = 0; j < 7; j += 1) {
                   var monthMoment = moment.utc(startDate).add((i * 7) + j, 'days');
                   var dateValue = {
@@ -293,8 +293,8 @@
                   utcDateValue: previousViewDate.valueOf(),
                   display: selectedDate.format('ll')
                 }),
-                'leftDate': new DateObject({utcDateValue: moment.utc(selectedDate).subtract(1, 'days').valueOf()}),
-                'rightDate': new DateObject({utcDateValue: moment.utc(selectedDate).add(1, 'days').valueOf()}),
+                'leftDate': new DateObject({ utcDateValue: moment.utc(selectedDate).subtract(1, 'days').valueOf() }),
+                'rightDate': new DateObject({ utcDateValue: moment.utc(selectedDate).add(1, 'days').valueOf() }),
                 'dates': []
               };
 
@@ -325,8 +325,8 @@
                   utcDateValue: previousViewDate.valueOf(),
                   display: selectedDate.format('lll')
                 }),
-                'leftDate': new DateObject({utcDateValue: moment.utc(selectedDate).subtract(1, 'hours').valueOf()}),
-                'rightDate': new DateObject({utcDateValue: moment.utc(selectedDate).add(1, 'hours').valueOf()}),
+                'leftDate': new DateObject({ utcDateValue: moment.utc(selectedDate).subtract(1, 'hours').valueOf() }),
+                'rightDate': new DateObject({ utcDateValue: moment.utc(selectedDate).add(1, 'hours').valueOf() }),
                 'dates': []
               };
 
@@ -357,7 +357,7 @@
                 jQuery(configuration.dropdownSelector).dropdown('toggle');
               }
 
-              scope.onSetTime({newDate: newDate, oldDate: oldDate});
+              scope.onSetTime({ newDate: newDate, oldDate: oldDate });
 
               return dataFactory[configuration.startView](unixDate);
             }
@@ -368,40 +368,53 @@
             return tempDate.getTime() - (tempDate.getTimezoneOffset() * 60000);
           };
 
+          scope.updateData = function updateData(result) {
+            var weekDates = [];
+            if (result.weeks) {
+              for (var i = 0; i < result.weeks.length; i += 1) {
+                var week = result.weeks[i];
+                for (var j = 0; j < week.dates.length; j += 1) {
+                  var weekDate = week.dates[j];
+                  weekDates.push(weekDate);
+                }
+              }
+            }
+
+            scope.beforeRender({
+              $view: result.currentView,
+              $dates: result.dates || weekDates,
+              $leftDate: result.leftDate,
+              $upDate: result.previousViewDate,
+              $rightDate: result.rightDate
+            });
+
+            scope.data = result;
+          }
+
           scope.changeView = function changeView(viewName, dateObject, event) {
             if (event) {
               event.stopPropagation();
               event.preventDefault();
             }
 
+            scope.dateObject = dateObject;
+
             if (viewName && (dateObject.utcDateValue > -Infinity) && dateObject.selectable && dataFactory[viewName]) {
               var result = dataFactory[viewName](dateObject.utcDateValue);
 
-              var weekDates = [];
-              if (result.weeks) {
-                for (var i = 0; i < result.weeks.length; i += 1) {
-                  var week = result.weeks[i];
-                  for (var j = 0; j < week.dates.length; j += 1) {
-                    var weekDate = week.dates[j];
-                    weekDates.push(weekDate);
-                  }
-                }
-              }
+              scope.updateData(result);
+            }
+          };
 
-              scope.beforeRender({
-                $view: result.currentView,
-                $dates: result.dates || weekDates,
-                $leftDate: result.leftDate,
-                $upDate: result.previousViewDate,
-                $rightDate: result.rightDate
-              });
-
-              scope.data = result;
+          scope.done = function done() {
+            if (scope.dateObject) {
+              var result = dataFactory['setTime'](scope.dateObject.utcDateValue);
+              scope.updateData(result);
             }
           };
 
           ngModelController.$render = function $render() {
-            scope.changeView(configuration.startView, new DateObject({utcDateValue: getUTCTime(ngModelController.$viewValue)}));
+            scope.changeView(configuration.startView, new DateObject({ utcDateValue: getUTCTime(ngModelController.$viewValue) }));
           };
         }
       };
