@@ -134,8 +134,8 @@
         '       </tr>' +
         '   </tbody>' +
         '</table>' +
-        '<button class="btn btn-success" ng-click="done()">Done</button>' +
-        '<button class="btn btn-danger btn-clear" ng-click="clear()">Clear</button>' +
+        '<button class="btn btn-danger" ng-click="clear()">Clear</button>' +
+	'<button class="btn btn-success btn-done" ng-click="done()">Done</button>' +
         '</div>',
         scope: {
           onSetTime: '&',
