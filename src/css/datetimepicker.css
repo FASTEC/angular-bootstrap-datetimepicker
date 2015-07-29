@@ -389,3 +389,8 @@
 .btn-done {
     float: right;
 }
+
+.btn-clear{
+	float: right;
+	margin-right: 10px;
+}
